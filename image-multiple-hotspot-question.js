@@ -16,9 +16,7 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
     var defaults = {
       imageMultipleHotspotQuestion: {
         backgroundImageSettings: {
-          backgroundImage: {
-            path: ''
-          }
+          path: ''
         },
         hotspotSettings: {
           hotspot: []
@@ -58,7 +56,7 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
     /**
      * Easier access to image settings.
      */
-     this.imageSettings = this.params.imageMultipleHotspotQuestion.backgroundImageSettings.backgroundImage;
+     this.imageSettings = this.params.imageMultipleHotspotQuestion.backgroundImageSettings;
 
     /**
      * Easier access to hotspot settings.
