@@ -139,9 +139,6 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
 
     this.$wrapper = $('<div>', {
       'class': 'image-hotspot-question ' + this.contentId
-    }).ready(function () {
-      var imageHeight = self.$wrapper.width() * (self.imageSettings.height / self.imageSettings.width);
-      self.$wrapper.css('height', imageHeight + 'px');
     });
 
     this.$imageWrapper = $('<div>', {
@@ -156,7 +153,7 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
 
     this.$img = $('<img>', {
       'class': 'hotspot-image',
-      'src': H5P.getPath(this.imageSettings.path, this.contentId)
+      'src': (this.imageSettings.path !== '') ? H5P.getPath(this.imageSettings.path, this.contentId) : ''
     });
 
     // Resize image once loaded
@@ -238,7 +235,7 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
       if (self.selectedHotspots.indexOf(index) == -1) {
         self.selectedHotspots.push(index); // add chosen hotspot to selectedHotspots list
       }
-     
+
       // Create new hotspot feedback
       self.createHotspotFeedback($(this), mouseEvent, hotspot);
 
@@ -321,7 +318,7 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
         }
       }
       this.hotspotFeedback.incorrect = false;
-    } 
+    }
     else if (hotspot && hotspot.userSettings.selected) {
       this.hotspotFeedback.$element.addClass('already-selected');
       feedbackText = this.params.imageMultipleHotspotQuestion.hotspotSettings.alreadySelectedFeedback;
@@ -364,9 +361,9 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
    * Return the clicked hotspots
    * @return {array} An array containin the indexes of the clicked hotspots
    */
-  ImageMultipleHotspotQuestion.prototype.getCurrentState = function () { 
+  ImageMultipleHotspotQuestion.prototype.getCurrentState = function () {
     return this.selectedHotspots;
-  } 
+  }
 
   /**
    * Checks if an answer for this question has been given.
@@ -437,52 +434,13 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
     // Clear feedback
     this.setFeedback();
   };
-  
+
   /**
    * Resize image and wrapper
    */
-  ImageMultipleHotspotQuestion.prototype.resize = function () {
-    this.resizeImage();
+   ImageMultipleHotspotQuestion.prototype.resize = function () {
     this.resizeHotspotFeedback();
     this.resizeCorrectHotspotFeedback();
-  };
-
-  /**
-   * Resize image to fit parent width.
-   */
-  ImageMultipleHotspotQuestion.prototype.resizeImage = function () {
-    var self = this;
-
-    // Check that question has been attached
-    if (!(this.$wrapper && this.$img)) {
-      return;
-    }
-
-    // Resize image to fit new container width.
-    var parentWidth = this.$wrapper.width();
-    this.$img.width(parentWidth);
-
-    // Find required height for new width.
-    var naturalWidth = this.$img.get(0).naturalWidth;
-    var naturalHeight = this.$img.get(0).naturalHeight;
-    var imageRatio = naturalHeight / naturalWidth;
-    var neededHeight = -1;
-    if (parentWidth < naturalWidth) {
-      // Scale image down
-      neededHeight = parentWidth * imageRatio;
-    }
-    else {
-      // Scale image to natural size
-      this.$img.width(naturalWidth);
-      neededHeight = naturalHeight;
-    }
-
-    if (neededHeight !== -1) {
-      this.$img.height(neededHeight);
-
-      // Resize wrapper to match image.
-      self.$wrapper.height(neededHeight);
-    }
   };
 
   /**
