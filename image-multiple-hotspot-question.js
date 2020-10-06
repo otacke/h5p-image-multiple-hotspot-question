@@ -25,7 +25,8 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
         }
       },
       behaviour: {
-        enableRetry: true
+        enableRetry: true,
+        enableSolutionsButton: false
       }
     };
 
