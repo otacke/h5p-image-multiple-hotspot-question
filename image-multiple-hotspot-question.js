@@ -426,6 +426,14 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
     // Remove any correct hotspots from array
     this.correctHotspotFeedback = [];
 
+    // Remove hotspots from DOM
+    this.$imageWrapper.find('.hotspot-feedback').remove();
+
+    // Erase tracks of previous tries
+    this.hotspotSettings.hotspot.forEach(function (hotspot) {
+      hotspot.userSettings.selected = false;
+    });
+
     this.score = 0;
     this.hotspotFeedback.hotspotChosen = false;
 
@@ -433,7 +441,7 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
     this.hideButton('retry-button');
 
     // Clear feedback
-    this.setFeedback();
+    this.removeFeedback();
   };
 
   /**
