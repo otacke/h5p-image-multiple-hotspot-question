@@ -371,8 +371,8 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
    * Used in contracts.
    * @returns {boolean}
    */
-  ImageMultipleHotspotQuestion.prototype.getAnswerGiven = function () {
-    return this.hotspotChosen;
+   ImageMultipleHotspotQuestion.prototype.getAnswerGiven = function () {
+    return this.hotspotFeedback.hotspotChosen;
   };
 
   /**
