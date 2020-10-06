@@ -374,32 +374,35 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
         return;
       }
 
-      const $correctHotspot = self.$hotspots[index];
+      // Wrapper may not yet be visible if used as subcontent
+      setTimeout(function() {
+        const $correctHotspot = self.$hotspots[index];
 
-      self.hotspotFeedback.$element = $('<div>', {
-        'class': 'hotspot-feedback'
-      }).appendTo(self.$imageWrapper);
+        self.hotspotFeedback.$element = $('<div>', {
+          'class': 'hotspot-feedback'
+        }).appendTo(self.$imageWrapper);
 
-      const feedbackPosX = $correctHotspot.position().left + $correctHotspot.width() / 2;
-      const feedbackPosY = $correctHotspot.position().top + $correctHotspot.height() / 2;
+        const feedbackPosX = $correctHotspot.position().left + $correctHotspot.width() / 2;
+        const feedbackPosY = $correctHotspot.position().top + $correctHotspot.height() / 2;
 
-      // Keep position and pixel offsets for resizing
-      self.hotspotFeedback.percentagePosX = feedbackPosX / (self.$imageWrapper.width() / 100);
-      self.hotspotFeedback.percentagePosY = feedbackPosY / (self.$imageWrapper.height() / 100);
-      self.hotspotFeedback.pixelOffsetX = (self.hotspotFeedback.$element.width() / 2);
-      self.hotspotFeedback.pixelOffsetY = (self.hotspotFeedback.$element.height() / 2);
+        // Keep position and pixel offsets for resizing
+        self.hotspotFeedback.percentagePosX = feedbackPosX / (self.$imageWrapper.width() / 100);
+        self.hotspotFeedback.percentagePosY = feedbackPosY / (self.$imageWrapper.height() / 100);
+        self.hotspotFeedback.pixelOffsetX = (self.hotspotFeedback.$element.width() / 2);
+        self.hotspotFeedback.pixelOffsetY = (self.hotspotFeedback.$element.height() / 2);
 
-      self.hotspotFeedback.hotspotChosen = true;
+        self.hotspotFeedback.hotspotChosen = true;
 
-      // Position feedback
-      self.resizeHotspotFeedback();
+        // Position feedback
+        self.resizeHotspotFeedback();
 
-      self.hotspotFeedback.hotspotChosen = false;
+        self.hotspotFeedback.hotspotChosen = false;
 
-      self.hotspotFeedback.$element.addClass('correct');
+        self.hotspotFeedback.$element.addClass('correct');
 
-      // Finally add fade in animation to hotspot feedback
-      self.hotspotFeedback.$element.addClass('fade-in');
+        // Finally add fade in animation to hotspot feedback
+        self.hotspotFeedback.$element.addClass('fade-in');
+      }, 0);
     });
   };
 
