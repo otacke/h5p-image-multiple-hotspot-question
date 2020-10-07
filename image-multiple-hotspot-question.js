@@ -30,6 +30,11 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
       }
     };
 
+    /**
+     * Keep track of selected hotspots
+     */
+    this.selectedHotspots = [];
+
     // Inheritance
     Question.call(self, 'image-multiple-hotspot-question');
 
@@ -97,6 +102,16 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
      * @type {Array}
      */
     this.$hotspots = [];
+
+    /**
+     * Keep track of selected hotspots
+     */
+    this.selectedHotspots = [];
+
+    /**
+     * Hotspots reference
+     */
+    this.allHotspots = this.hotspotSettings.hotspot;
 
     /**
      * Keeps track of the content data. Specifically the previous state.
@@ -220,8 +235,8 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
    */
   ImageMultipleHotspotQuestion.prototype.attachHotspots = function () {
     const self = this;
-    this.hotspotSettings.hotspot.forEach(function (hotspot) {
-      self.attachHotspot(hotspot);
+    this.hotspotSettings.hotspot.forEach(function (hotspot, index) {
+      self.attachHotspot(hotspot, index);
     });
   };
 
@@ -229,7 +244,7 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
    * Attach single hotspot.
    * @param {Object} hotspot Hotspot parameters
    */
-  ImageMultipleHotspotQuestion.prototype.attachHotspot = function (hotspot) {
+  ImageMultipleHotspotQuestion.prototype.attachHotspot = function (hotspot, index) {
     const self = this;
     const $hotspot = $('<div>', {
       'class': 'image-hotspot ' + hotspot.computedSettings.figure
@@ -239,6 +254,10 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
       width: hotspot.computedSettings.width + '%',
       height: hotspot.computedSettings.height + '%'
     }).click(function (mouseEvent) {
+      if (self.selectedHotspots.indexOf(index) === -1) {
+        self.selectedHotspots.push(index); // add chosen hotspot to selectedHotspots list
+      }
+
       if (self.disabled) {
         return false;
       }
@@ -404,7 +423,7 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
    */
   ImageMultipleHotspotQuestion.prototype.getCurrentState = function () {
     return this.selectedHotspots;
-  }
+  };
 
   /**
    * Checks if an answer for this question has been given.
