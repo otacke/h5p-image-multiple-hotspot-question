@@ -361,7 +361,7 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
     this.hotspotFeedback.$element.addClass('fade-in');
 
     // Trigger xAPI completed event
-    this.triggerXAPIScored(this.getScore(), this.getMaxScore(), 'answered');
+    this.trigger(this.getXAPIAnswerEvent());
   };
 
   /**
@@ -539,6 +539,81 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
       top: posY
     });
   };
+
+  /**
+   * Get xAPI data.
+   * @return {object} XAPI statement.
+   * @see contract at {@link https://h5p.org/documentation/developers/contracts#guides-header-6}
+   */
+  ImageMultipleHotspotQuestion.prototype.getXAPIData = function () {
+    return ({statement: this.getXAPIAnswerEvent().data.statement});
+  };
+
+  /**
+   * Build xAPI answer event.
+   * @return {H5P.XAPIEvent} XAPI answer event.
+   */
+  ImageMultipleHotspotQuestion.prototype.getXAPIAnswerEvent = function () {
+    const xAPIEvent = this.createImageMultipleHotspotQuestionXAPIEvent('answered');
+
+    // Set reporting module version if alternative extension is used
+    const definition = xAPIEvent.getVerifiedStatementValue(['object', 'definition']);
+
+    xAPIEvent.setScoredResult(this.getScore(), this.getMaxScore(), this,
+      true, this.getScore() === this.getMaxScore());
+
+    return xAPIEvent;
+  };
+
+  /**
+   * Create an xAPI event for ImageMultipleHotspotQuestion.
+   * @param {string} verb Short id of the verb we want to trigger.
+   * @return {H5P.XAPIEvent} Event template.
+   */
+  ImageMultipleHotspotQuestion.prototype.createImageMultipleHotspotQuestionXAPIEvent = function (verb) {
+    const xAPIEvent = this.createXAPIEventTemplate(verb);
+
+    $.extend(true, xAPIEvent.getVerifiedStatementValue(['object', 'definition']), this.getxAPIDefinition());
+
+    return xAPIEvent;
+  };
+
+  /**
+   * Get the xAPI definition for the xAPI object.
+   * @return {object} XAPI definition.
+   */
+  ImageMultipleHotspotQuestion.prototype.getxAPIDefinition = function () {
+    return {
+      name: {'en-US': this.getTitle()},
+      description: {'en-US': this.getDescription()},
+      type: 'http://adlnet.gov/expapi/activities/cmi.interaction',
+      interactionType: 'choice'
+    }
+  };
+
+  /**
+   * Get tasks title.
+   * @return {string} Title.
+   */
+  ImageMultipleHotspotQuestion.prototype.getTitle = function () {
+    let raw;
+    if (this.contentData && this.contentData.metadata) {
+      raw = this.contentData.metadata.title;
+    }
+    raw = raw || ImageMultipleHotspotQuestion.DEFAULT_DESCRIPTION;
+
+    return H5P.createTitle(raw);
+  };
+
+  /**
+   * Get tasks description.
+   * @return {string} Description.
+   */
+  ImageMultipleHotspotQuestion.prototype.getDescription = function () {
+    return this.params.imageMultipleHotspotQuestion.hotspotSettings.taskDescription || ImageMultipleHotspotQuestion.DEFAULT_DESCRIPTION;
+  };
+
+  ImageMultipleHotspotQuestion.DEFAULT_DESCRIPTION = 'Image Multiple Hotspot Question';
 
   return ImageMultipleHotspotQuestion;
 }(H5P.jQuery, H5P.Question));
