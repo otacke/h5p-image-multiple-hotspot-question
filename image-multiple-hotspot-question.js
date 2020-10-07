@@ -31,7 +31,7 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
     };
 
     // Inheritance
-    Question.call(self, 'image-hotspot-question');
+    Question.call(self, 'image-multiple-hotspot-question');
 
     /**
      * Keeps track of content id.
@@ -151,7 +151,7 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
     var self = this;
 
     this.$wrapper = $('<div>', {
-      'class': 'image-hotspot-question ' + this.contentId
+      'class': 'image-multiple-hotspot-question ' + this.contentId
     });
 
     this.$imageWrapper = $('<div>', {
