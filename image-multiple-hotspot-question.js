@@ -58,6 +58,12 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
     this.disabled = false;
 
     /**
+     * State for answer given.
+     * @type {boolean}
+     */
+    this.answerGiven = false;
+
+    /**
      * Keeps track of parameters
      */
     this.params = $.extend(true, {}, defaults, params);
@@ -266,7 +272,8 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
    * @param {Object} mouseEvent Mouse event containing mouse offsets within clicked element.
    * @param {Object} hotspot Hotspot parameters.
    */
-  ImageMultipleHotspotQuestion.prototype.createHotspotFeedback = function ($clickedElement, mouseEvent, hotspot) {
+   ImageMultipleHotspotQuestion.prototype.createHotspotFeedback = function ($clickedElement, mouseEvent, hotspot) {
+    this.answerGiven = true;
 
     var feedbackText;
 
@@ -367,7 +374,8 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
      return; // Already showing all correct hotspots
     }
 
-    this.resetTask();
+    // Remove old feedback.
+    this.$wrapper.find('.hotspot-feedback').remove();
 
     this.hotspotSettings.hotspot.forEach(function (spot, index) {
       if (!spot.userSettings.correct) {
@@ -403,6 +411,8 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
         // Finally add fade in animation to hotspot feedback
         self.hotspotFeedback.$element.addClass('fade-in');
       }, 0);
+
+      self.setFeedback('', self.getScore(), self.getMaxScore());
     });
   };
 
@@ -430,8 +440,8 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
    * Used in contracts.
    * @returns {boolean}
    */
-   ImageMultipleHotspotQuestion.prototype.getAnswerGiven = function () {
-    return this.hotspotFeedback.hotspotChosen;
+  ImageMultipleHotspotQuestion.prototype.getAnswerGiven = function () {
+    return this.answerGiven;
   };
 
   /**
@@ -495,6 +505,8 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
     this.removeFeedback();
 
     this.disabled = false;
+
+    this.answerGiven = false;
   };
 
   /**
