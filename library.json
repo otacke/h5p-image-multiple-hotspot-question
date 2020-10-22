@@ -32,7 +32,12 @@
       "machineName": "H5PEditor.ImageMultipleHotspotQuestion",
       "majorVersion": 1,
       "minorVersion": 0
-    }
+    },
+		{
+			"machineName": "H5PEditor.AudioRecorder",
+			"majorVersion": 1,
+			"minorVersion": 0
+		}
   ],
   "preloadedDependencies": [
     {

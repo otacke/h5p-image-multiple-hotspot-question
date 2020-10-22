@@ -55,6 +55,9 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
      */
     this.params = $.extend(true, {}, defaults, params);
 
+    // Store audios
+    this.audios = new Array(this.params.imageMultipleHotspotQuestion.hotspotSettings.hotspot.length);
+
     /**
      * Easier access to image settings.
      */
@@ -120,7 +123,7 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
   ImageMultipleHotspotQuestion.prototype.registerDomElements = function () {
     // Register task introduction text
     if (this.hotspotSettings.taskDescription) {
-      this.setIntroduction(this.hotspotSettings.taskDescription);
+      this.setIntroduction(this.createIntroduction(this.hotspotSettings));
     }
 
     // Register task content area
@@ -128,6 +131,83 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
 
     // Register retry button
     this.createRetryButton();
+  };
+
+  ImageMultipleHotspotQuestion.prototype.createIntroduction = function (params) {
+    const that = this;
+
+    $introductionWrapper = $('<div class="h5p-image-hotspot-question-intro-wrapper">');
+
+    const hasAudio = (params.taskDescriptionAudio && params.taskDescriptionAudio.length > 0);
+
+    if (hasAudio) {
+      const audio = ImageMultipleHotspotQuestion.createAudio(params.taskDescriptionAudio, this.contentId);
+
+      const $audioButtonContainer = $('<div/>', {
+        'class': 'h5p-image-hotspot-question-audio-wrapper'
+      });
+
+      const $audioButton = $('<button/>', {
+        'class': 'h5p-image-hotspot-question-audio-minimal-button h5p-image-hotspot-question-audio-minimal-play',
+        'aria-label': this.params.l10n.play
+      }).appendTo($audioButtonContainer)
+        .click( function () {
+          // Prevent ARIA from playing over audio on click
+          this.setAttribute('aria-hidden', 'true');
+
+          if (audio.player.paused) {
+            audio.player.play();
+          }
+          else {
+            audio.player.pause();
+          }
+        })
+        .on('focusout', function () {
+          // Restore ARIA, required when playing longer audio and tabbing out and back in
+          this.setAttribute('aria-hidden', 'false');
+        });
+
+      $audioButton.css({
+        'width': '100%',
+        'height': '100%'
+      });
+
+      //Event listeners that change the look of the player depending on events.
+      audio.player.addEventListener('ended', function () {
+        $audioButton
+          .attr('aria-hidden', false)
+          .attr('aria-label', that.params.l10n.play)
+          .removeClass('h5p-image-hotspot-question-audio-minimal-pause')
+          .removeClass('h5p-image-hotspot-question-audio-minimal-play-paused')
+          .addClass('h5p-image-hotspot-question-audio-minimal-play');
+      });
+
+      audio.player.addEventListener('play', function () {
+        $audioButton
+          .attr('aria-label', that.params.l10n.pause)
+          .removeClass('h5p-image-hotspot-question-audio-minimal-play')
+          .removeClass('h5p-image-hotspot-question-audio-minimal-play-paused')
+          .addClass('h5p-image-hotspot-question-audio-minimal-pause');
+      });
+
+      audio.player.addEventListener('pause', function () {
+        $audioButton
+          .attr('aria-hidden', false)
+          .attr('aria-label', that.params.l10n.play)
+          .removeClass('h5p-image-hotspot-question-audio-minimal-play')
+          .removeClass('h5p-image-hotspot-question-audio-minimal-pause')
+          .addClass('h5p-image-hotspot-question-audio-minimal-play-paused');
+      });
+
+      $audioButtonContainer.appendTo($introductionWrapper);
+    }
+
+    const $taskDescription = $('<div class="h5p-image-hotspot-question-intro">' + params.taskDescription + '</div>').appendTo($introductionWrapper);
+    if (hasAudio) {
+      $taskDescription.addClass('hasAudio');
+    }
+
+    return $introductionWrapper;
   };
 
   /**
@@ -205,6 +285,7 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
         });
       }
       else {
+        self.stopAudios();
         // Create new hotspot feedback
         self.createHotspotFeedback($(this), mouseEvent);
       }
@@ -226,6 +307,8 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
    * @param {Object} hotspot Hotspot parameters
    */
   ImageMultipleHotspotQuestion.prototype.attachHotspot = function (hotspot, index) {
+    this.audios[index] = ImageMultipleHotspotQuestion.createAudio(hotspot.userSettings.audio, this.contentId);
+
     var self = this;
     var $hotspot = $('<div>', {
       'class': 'image-hotspot ' + hotspot.computedSettings.figure
@@ -235,10 +318,20 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
       width: hotspot.computedSettings.width + '%',
       height: hotspot.computedSettings.height + '%'
     }).click(function (mouseEvent) {
+      self.stopAudios();
+
+      if (self.getScore() >= self.getMaxScore()) {
+        return; // done
+      }
+
       if (self.selectedHotspots.indexOf(index) == -1) {
+        self.playAudio(index);
         self.selectedHotspots.push(index); // add chosen hotspot to selectedHotspots list
       }
-     
+      else if (!hotspot.userSettings.correct) {
+        self.playAudio(index); // Wrong audios played again.
+      }
+
       // Create new hotspot feedback
       self.createHotspotFeedback($(this), mouseEvent, hotspot);
 
@@ -321,7 +414,7 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
         }
       }
       this.hotspotFeedback.incorrect = false;
-    } 
+    }
     else if (hotspot && hotspot.userSettings.selected) {
       this.hotspotFeedback.$element.addClass('already-selected');
       feedbackText = this.params.imageMultipleHotspotQuestion.hotspotSettings.alreadySelectedFeedback;
@@ -364,9 +457,9 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
    * Return the clicked hotspots
    * @return {array} An array containin the indexes of the clicked hotspots
    */
-  ImageMultipleHotspotQuestion.prototype.getCurrentState = function () { 
+  ImageMultipleHotspotQuestion.prototype.getCurrentState = function () {
     return this.selectedHotspots;
-  } 
+  }
 
   /**
    * Checks if an answer for this question has been given.
@@ -437,7 +530,7 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
     // Clear feedback
     this.setFeedback();
   };
-  
+
   /**
    * Resize image and wrapper
    */
@@ -524,6 +617,85 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
     this.hotspotFeedback.$element.css({
       left: posX,
       top: posY
+    });
+  };
+
+  /**
+   * Create audio elements from audio object.
+   * @param {object} audio Audio object.
+   * @param {number} id ContentId.
+   * @return {object[]} Audio elements.
+   */
+  ImageMultipleHotspotQuestion.createAudio = function(audio, id) {
+    if (!audio || audio.length < 1 || !audio[0].path) {
+      return null;
+    }
+
+    const player = document.createElement('audio');
+    player.style.display = 'none';
+    player.src = H5P.getPath(audio[0].path, id);
+
+    return {
+      player: player,
+      promise: null
+    };
+  };
+
+  /**
+   * Start audio.
+   * @param {number} id Index.
+   */
+  ImageMultipleHotspotQuestion.prototype.playAudio = function (id) {
+    if (id < 0 || id >= this.audios.length) {
+      return;
+    }
+
+    const audio = this.audios[id];
+
+    if (!audio) {
+      return;
+    }
+
+    // People might click quickly ...
+    if (!audio.promise) {
+      audio.promise = audio.player.play();
+      audio.promise
+        .then(() => {
+          audio.promise = null;
+        })
+        .catch(() => {
+          // Browser policy prevents playing
+          audio.promise = null;
+        });
+    }
+  };
+
+  /**
+   * Stop audios
+   */
+  ImageMultipleHotspotQuestion.prototype.stopAudios = function() {
+    /*
+     * People may click quickly, and audios that should
+     * be stopped may not have loaded yet.
+     */
+    const that = this;
+
+    this.audios.forEach(function(audio) {
+      if (!audio) {
+        return;
+      }
+
+      if (audio.promise) {
+        audio.promise.then(() => {
+          audio.player.pause();
+          audio.player.load(); // Reset
+          audio.promise = null;
+        });
+      }
+      else {
+        audio.player.pause();
+        audio.player.load(); // Reset
+      }
     });
   };
 
