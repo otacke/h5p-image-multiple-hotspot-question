@@ -26,6 +26,11 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
       },
       behaviour: {
         enableRetry: true
+      },
+      l10n: {
+        play: 'Play',
+        pause: 'Pause',
+        audioNotSupported: 'Your browser does not support this audio'
       }
     };
 
@@ -123,7 +128,10 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
   ImageMultipleHotspotQuestion.prototype.registerDomElements = function () {
     // Register task introduction text
     if (this.hotspotSettings.taskDescription) {
-      this.setIntroduction(this.createIntroduction(this.hotspotSettings));
+      this.setIntroduction(this.createIntroduction({
+        hotspotSettings: this.hotspotSettings,
+        l10n: this.params.l10n
+      }));
     }
 
     // Register task content area
@@ -138,71 +146,25 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
 
     $introductionWrapper = $('<div class="h5p-image-hotspot-question-intro-wrapper">');
 
-    const hasAudio = (params.taskDescriptionAudio && params.taskDescriptionAudio.length > 0);
+    const hasAudio = (params.hotspotSettings.taskDescriptionAudio && params.hotspotSettings.taskDescriptionAudio.length > 0);
 
     if (hasAudio) {
-      const audio = ImageMultipleHotspotQuestion.createAudio(params.taskDescriptionAudio, this.contentId);
-
       const $audioButtonContainer = $('<div/>', {
         'class': 'h5p-image-hotspot-question-audio-wrapper'
       });
 
-      const $audioButton = $('<button/>', {
-        'class': 'h5p-image-hotspot-question-audio-minimal-button h5p-image-hotspot-question-audio-minimal-play',
-        'aria-label': this.params.l10n.play
-      }).appendTo($audioButtonContainer)
-        .click( function () {
-          // Prevent ARIA from playing over audio on click
-          this.setAttribute('aria-hidden', 'true');
-
-          if (audio.player.paused) {
-            audio.player.play();
-          }
-          else {
-            audio.player.pause();
-          }
-        })
-        .on('focusout', function () {
-          // Restore ARIA, required when playing longer audio and tabbing out and back in
-          this.setAttribute('aria-hidden', 'false');
-        });
-
-      $audioButton.css({
-        'width': '100%',
-        'height': '100%'
-      });
-
-      //Event listeners that change the look of the player depending on events.
-      audio.player.addEventListener('ended', function () {
-        $audioButton
-          .attr('aria-hidden', false)
-          .attr('aria-label', that.params.l10n.play)
-          .removeClass('h5p-image-hotspot-question-audio-minimal-pause')
-          .removeClass('h5p-image-hotspot-question-audio-minimal-play-paused')
-          .addClass('h5p-image-hotspot-question-audio-minimal-play');
-      });
-
-      audio.player.addEventListener('play', function () {
-        $audioButton
-          .attr('aria-label', that.params.l10n.pause)
-          .removeClass('h5p-image-hotspot-question-audio-minimal-play')
-          .removeClass('h5p-image-hotspot-question-audio-minimal-play-paused')
-          .addClass('h5p-image-hotspot-question-audio-minimal-pause');
-      });
-
-      audio.player.addEventListener('pause', function () {
-        $audioButton
-          .attr('aria-hidden', false)
-          .attr('aria-label', that.params.l10n.play)
-          .removeClass('h5p-image-hotspot-question-audio-minimal-play')
-          .removeClass('h5p-image-hotspot-question-audio-minimal-pause')
-          .addClass('h5p-image-hotspot-question-audio-minimal-play-paused');
-      });
-
+      const audioInstance = new H5P.Audio(
+        {
+          files: params.hotspotSettings.taskDescriptionAudio,
+          audioNotSupported: params.l10n.audioNotSupported
+        },
+        this.contentId
+      );
+      audioInstance.attach($audioButtonContainer);
       $audioButtonContainer.appendTo($introductionWrapper);
     }
 
-    const $taskDescription = $('<div class="h5p-image-hotspot-question-intro">' + params.taskDescription + '</div>').appendTo($introductionWrapper);
+    const $taskDescription = $('<div class="h5p-image-hotspot-question-intro">' + params.hotspotSettings.taskDescription + '</div>').appendTo($introductionWrapper);
     if (hasAudio) {
       $taskDescription.addClass('hasAudio');
     }
