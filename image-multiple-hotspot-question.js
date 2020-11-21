@@ -284,7 +284,7 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
         return; // done
       }
 
-      if (self.selectedHotspots.indexOf(index) == -1) {
+      if (self.selectedHotspots.indexOf(index) === -1) {
         self.playAudio(index);
         self.selectedHotspots.push(index); // add chosen hotspot to selectedHotspots list
       }
@@ -419,7 +419,7 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
    */
   ImageMultipleHotspotQuestion.prototype.getCurrentState = function () {
     return this.selectedHotspots;
-  }
+  };
 
   /**
    * Checks if an answer for this question has been given.
