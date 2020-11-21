@@ -142,9 +142,7 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
   };
 
   ImageMultipleHotspotQuestion.prototype.createIntroduction = function (params) {
-    const that = this;
-
-    $introductionWrapper = $('<div class="h5p-image-hotspot-question-intro-wrapper">');
+    const $introductionWrapper = $('<div class="h5p-image-hotspot-question-intro-wrapper">');
 
     const hasAudio = (params.hotspotSettings.taskDescriptionAudio && params.hotspotSettings.taskDescriptionAudio.length > 0);
 
@@ -230,7 +228,7 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
 
     this.$imageWrapper.click(function (mouseEvent) {
       if($(mouseEvent.target).is('.correct, .already-selected, .incorrect')) {
-        $(".image-hotspot").each(function() {
+        $(".image-hotspot").each(function () {
           // check if clicked point (taken from event) is inside element
           var mouseX = mouseEvent.pageX;
           var mouseY = mouseEvent.pageY;
@@ -588,7 +586,7 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
    * @param {number} id ContentId.
    * @return {object[]} Audio elements.
    */
-  ImageMultipleHotspotQuestion.createAudio = function(audio, id) {
+  ImageMultipleHotspotQuestion.createAudio = function (audio, id) {
     if (!audio || audio.length < 1 || !audio[0].path) {
       return null;
     }
@@ -635,14 +633,12 @@ H5P.ImageMultipleHotspotQuestion = (function ($, Question) {
   /**
    * Stop audios
    */
-  ImageMultipleHotspotQuestion.prototype.stopAudios = function() {
+  ImageMultipleHotspotQuestion.prototype.stopAudios = function () {
     /*
      * People may click quickly, and audios that should
      * be stopped may not have loaded yet.
      */
-    const that = this;
-
-    this.audios.forEach(function(audio) {
+    this.audios.forEach(function (audio) {
       if (!audio) {
         return;
       }
